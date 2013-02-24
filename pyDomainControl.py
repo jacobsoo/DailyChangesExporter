@@ -2,7 +2,7 @@
 # Settings
 from datetime import date, datetime, timedelta, time
 import urllib2
-import sys, os
+import sys, os, thread
 
 # Function definitions
 def datespan(startDate, endDate, delta=timedelta(days=1)):
@@ -14,7 +14,7 @@ def datespan(startDate, endDate, delta=timedelta(days=1)):
 # Banner
 def Banner():
     print("=================================================")
-    print("domaincontrol transfer v0.1                      ")
+    print("DailyChanges.com transfer v0.2                   ")
     print("=================================================")
 
 # Usage
@@ -24,16 +24,23 @@ def help_menu(cmd):
     print("<endDate> - DD/MM/YYYY\n")
 
 # Main Program
-def main(startDate,endDate):
+def main(mStartDate,mEndDate):
+    szNameServer = ["domaincontrol.com", "name-services.com", "blank-nameserver.com", "expiredns.com", "namebrightdns.com", "hostingpro.biz", "expirenotification.com"]
+    for i in szNameServer:
+        NameServerLoop(i,mStartDate,mEndDate)
+
+# NameServer Loop
+def NameServerLoop(NameServer, startDate,endDate):
     D1 = startDate.split('/')
     D2 = endDate.split('/')
     for day in datespan(date(int(D1[2]),int(D1[1]),int(D1[0])), date(int(D2[2]),int(D2[1]),int(D2[0])), delta=timedelta(days=1)):
-        url = "http://www.dailychanges.com/export/domaincontrol.com/%s/export.csv" % (day)
+        url = "http://www.dailychanges.com/export/%s/%s/export.csv" % (NameServer, day)
         opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'),('Referer', 'http://www.dailychanges.com/domaincontrol.com/')]
+        referer = "http://www.dailychanges.com/" + NameServer + "/"
+        opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'),('Referer', referer)]
         usock = opener.open(url)
         data = usock.read()
-        szFileName = str(day) + "-export.csv"
+        szFileName = NameServer + "-" + str(day) + "-export.csv"
         localFile = open(szFileName, 'w')
         print("[*] Saving %s\n" % szFileName)
         localFile.write(data)
